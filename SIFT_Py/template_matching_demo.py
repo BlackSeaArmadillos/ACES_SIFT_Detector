@@ -3,6 +3,8 @@ import cv2
 import pysift
 from matplotlib import pyplot as plt
 import logging
+import time
+import math
 logger = logging.getLogger(__name__)
 
 MIN_MATCH_COUNT = 10
@@ -10,9 +12,20 @@ MIN_MATCH_COUNT = 10
 img1 = cv2.imread('box.png', 0)           # queryImage
 img2 = cv2.imread('box_in_scene.png', 0)  # trainImage
 
+img1 = cv2.resize(img1, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+img2 = cv2.resize(img2, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+
+st = time.time()
+
 # Compute SIFT keypoints and descriptors
 kp1, des1 = pysift.computeKeypointsAndDescriptors(img1)
 kp2, des2 = pysift.computeKeypointsAndDescriptors(img2)
+
+et = time.time()
+
+# get the execution time
+elapsed_time = et - st
+print('Execution time:', elapsed_time, 'seconds')
 
 # Initialize and use FLANN
 FLANN_INDEX_KDTREE = 0
@@ -60,6 +73,22 @@ if len(good) > MIN_MATCH_COUNT:
         pt1 = (int(kp1[m.queryIdx].pt[0]), int(kp1[m.queryIdx].pt[1] + hdif))
         pt2 = (int(kp2[m.trainIdx].pt[0] + w1), int(kp2[m.trainIdx].pt[1]))
         cv2.line(newimg, pt1, pt2, (255, 0, 0))
+
+    st1 = time.time()
+    # Compute L1/L2
+    for m in good:
+        pt1 = (int(kp1[m.queryIdx].pt[0]), int(kp1[m.queryIdx].pt[1] + hdif))
+        pt2 = (int(kp2[m.trainIdx].pt[0] + w1), int(kp2[m.trainIdx].pt[1]))
+        distanceL1 = abs(pt2[1]*pt1[1]) + abs(pt2[0]*pt1[0])
+        distanceL2 = math.sqrt((pt2[1] - pt1[1])*(pt2[1] - pt1[1]) + (pt2[0]*pt1[0])*(pt2[0]*pt1[0]))
+        #print(distanceL1)
+        #print(distanceL2)
+
+    et1 = time.time()
+
+    # get the execution time
+    elapsed_time1 = et1 - st1
+    print('Compute L1/L2 time:', elapsed_time1, 'seconds')
 
     plt.imshow(newimg)
     plt.show()
