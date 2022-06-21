@@ -1,5 +1,5 @@
 CXXFLAGS = --std=c++17
-CFLAGS = -c
+CFLAGS = -c -O3
 #OBJ_FILES = $(shell find src/ -name "*.o")
 #find_keypoints.o
 OBJ_FILES = match_features.o image.o sift.o
